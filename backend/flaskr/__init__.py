@@ -254,6 +254,14 @@ def create_app(test_config=None):
       "error": 400,
       "message": "Bad request."
       }), 400
+
+  @app.errorhandler(405)
+  def method_not_allowed(error)::
+    return jsonify({
+      "success": False,
+      "error": 405,
+      "message": "Method not allowed."
+      }), 405
   
   @app.errorhandler(500)
   def unprocessable(error):
