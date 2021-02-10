@@ -256,7 +256,7 @@ def create_app(test_config=None):
       }), 400
 
   @app.errorhandler(405)
-  def method_not_allowed(error)::
+  def method_not_allowed(error):
     return jsonify({
       "success": False,
       "error": 405,
