@@ -44,16 +44,14 @@ def create_app(test_config=None):
   @app.route('/categories', methods=['GET'])
   def get_categories():
     categories = Category.query.order_by(Category.id).all()
-    category = [subcategory.type for subcategory in categories]
-      #categories[subcategory.id] = subcategory.type
+    category = {subcategory.id: subcategory.type for subcategory in categories}
 
     if len(categories) == 0:
       abort(404)
 
     return jsonify({
       'success': True,
-      'categories': category,
-      'total_categories': len(Category.query.all())
+      'categories': category
     })
 
   '''
@@ -109,12 +107,9 @@ def create_app(test_config=None):
       category = [subcategory.type for subcategory in categories]
 
       return jsonify({
+        'id': question_id,
+        'message': "Question deleted successfully",
         'success': True,
-        'deleted': question_id,
-        'questions': current_question,
-        'total_questions': len(questions),
-        'current_category': None,
-        'categories': category
       })
     except:
       abort(422)
@@ -133,28 +128,19 @@ def create_app(test_config=None):
   @app.route('/questions', methods=['POST'])
   def new_question():
     body = request.get_json()
-
+    
     new_question = body.get('question')
     new_answer = body.get('answer')
     new_category = body.get('category')
     new_difficulty = body.get('difficulty')
 
     try:
-      question = Question(question=new_question, answer=new_answer, category=new_category, difficulty=new_difficulty)
+      question = Question(answer=new_answer, category=new_category, difficulty=new_difficulty, question=new_question)
       question.insert()
-
-      questions = Question.query.order_by(Question.id).all()
-      current_question = paginate_questions(request, questions)
-
-      categories = Category.query.order_by(Category.id).all()
-      category = [subcategory.type for subcategory in categories]
 
       return jsonify({
         'success': True,
-        'questions': current_question,
-        'total_questions': len(questions),
-        'current_category': None,
-        'categories': category
+        'questions': question.format()
       })
     except:
       abort(422)
@@ -173,7 +159,7 @@ def create_app(test_config=None):
   @app.route('/questions/search', methods=['POST'])
   def search_question():
     body = request.get_json()
-    search_term = body.get('search_term', '')
+    search_term = body.get('searchTerm', '')
     
     if search_term:
       results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
@@ -220,12 +206,12 @@ def create_app(test_config=None):
   def play_quizzes():
     body = request.get_json()
     category = body.get('quiz_category')
-    quiz_prev_questions = body.get('quiz_prev_quesiton')
+    previous_questions = body.get('previous_questions')
     
     if category['type'] == 'click':
-      questions = Question.query.filter(Question.id.notin_(quiz_prev_questions)).all()
+      questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
     else:
-      questions = Question.query.filter_by(category=category['id']).filter(Question.id.notin_(quiz_prev_questions)).all()
+      questions = Question.query.filter_by(category=category['id']).filter(Question.id.notin_(previous_questions)).all()
     
     
     if len(questions) > 0:
@@ -238,8 +224,7 @@ def create_app(test_config=None):
       'question': new_question
       })
 
-
-
+ 
 
   '''
   @TODO: 
