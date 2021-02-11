@@ -71,7 +71,7 @@ def create_app(test_config=None):
     questions = Question.query.order_by(Question.id).all()
     current_question = paginate_questions(request, questions)  
     categories = Category.query.order_by(Category.id).all()
-    category = [subcategory.type for subcategory in categories]
+    category = {subcategory.id: subcategory.type for subcategory in categories}
 
     if len(questions) == 0:
       abort(404)
@@ -103,8 +103,6 @@ def create_app(test_config=None):
       questions = Question.query.order_by(Question.id).all()
       current_question = paginate_questions(request, questions)
 
-      categories = Category.query.order_by(Category.id).all()
-      category = [subcategory.type for subcategory in categories]
 
       return jsonify({
         'id': question_id,
@@ -167,8 +165,7 @@ def create_app(test_config=None):
 
     return jsonify({
       'success': True,
-      'questions': questions,
-      'total_questions': len(results)
+      'questions': questions
     })
 
   '''
